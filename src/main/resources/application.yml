@@ -1,0 +1,98 @@
+server:
+  port: 6082
+
+spring:
+  profiles:
+    active: dev
+  application:
+    name: weche-apis
+  jpa:
+    database: postgresql
+    database-platform: org.hibernate.dialect.PostgreSQLDialect
+    hibernate:
+      ddl-auto: update
+      naming:
+        implicit-strategy: org.hibernate.boot.model.naming.ImplicitNamingStrategyComponentPathImpl
+        physical-strategy: org.hibernate.boot.model.naming.CamelCaseToUnderscoresNamingStrategy
+    properties:
+      hibernate:
+        connection:
+          driver_class: org.postgresql.Driver
+          url: jdbc:postgresql://38.242.223.120:5432/dbweche
+#          url: jdbc:postgresql://localhost:5432/weche-db
+          username: uweche
+          password: passweche
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+    show-sql: false
+  datasource:
+    driver-class-name: org.postgresql.Driver
+#    url: jdbc:postgresql://localhost:5432/weche-db
+    url: jdbc:postgresql://38.242.223.120:5432/dbweche
+    username: uweche
+    password: passweche
+  security:
+    oauth2:
+      resource-server:
+        jwt:
+          issuer-uri: https://idp.example.com/issuer
+          jws-algorithms: RS512
+          jwk-set-uri: https://idp.example.com/.well-known/jwks.json
+  servlet:
+    multipart:
+      enabled: true
+      max-file-size: 5MB
+      max-request-size: 10MB
+      file-size-threshold: 2MB
+  mail:
+    host: smtp.gmail.com
+    port: 587
+    properties:
+      mail:
+        smtp:
+          auth: true
+          starttls:
+            enable: true
+    username: assistance.library.platform@gmail.com
+    password: wckqhauscqdiqavy
+
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: "*"
+  endpoint:
+    health:
+      show-details: always
+  server:
+    base-path: /actuator
+logging:
+  level:
+    org.springframework.security: DEBUG
+    org.springframework.session: DEBUG
+    org.springframework.web.servlet.DispatcherServlet: DEBUG
+  file:
+    name: ${user.home}/weche-files/logs/application.log
+
+file:
+  upload-dir: ${user.home}/weche-files
+
+access-token:
+  private: ${ACCESS_TOKEN_PRIVATE_KEY_PATH}
+  public: ${ACCESS_TOKEN_PUBLIC_KEY_PATH}
+
+refresh-token:
+  public: ${REFRESH_TOKEN_PRIVATE_KEY_PATH}
+  private: ${REFRESH_TOKEN_PUBLIC_KEY_PATH}
+
+springdoc:
+  api-docs:
+    path: /v3/api-docs
+    enabled: true
+  swagger-ui:
+    path: /swagger-ui.html
+
+
+
+
+

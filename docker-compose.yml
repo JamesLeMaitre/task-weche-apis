@@ -1,0 +1,45 @@
+version: '3.8'
+
+services:
+  weche-apis:
+    image: weche-apis:latest
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "6082:6082"
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5439/weche-db
+      SPRING_DATASOURCE_USERNAME: ${POSTGRES_USER}
+      SPRING_DATASOURCE_PASSWORD: ${POSTGRES_PASSWORD}
+    depends_on:
+      - postgres
+
+  postgres:
+    image: postgres:latest
+    container_name: weche-postgres
+    ports:
+      - "5439:5439"
+    environment:
+      POSTGRES_DB: weche-db
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: root
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+volumes:
+  postgres_data:
+
+
+
+#version: '3.9'
+
+#services:
+#  backend-service:
+#    image: sineb/backend-apis:full
+#    container_name:  backend-apis-container
+#    ports:
+#      - "8882:8882"
+#    volumes:
+#      - /home/system/sinebFiles/2023/:/root/sinebFiles/
+#    restart: always
