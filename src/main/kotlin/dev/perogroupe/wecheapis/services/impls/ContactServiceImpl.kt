@@ -58,15 +58,22 @@ class ContactServiceImpl(
     }
 
     fun concatText(req: Contact): String {
-        return "Bonjour Administrator," +
-                "\n Une nouvelle demande de prise de contact a été effectuée sur la platforme. Voici les informations ci-dessous : " +
-                "\n Nom : ${req.name}" +
-                "\n Email : ${req.email}" +
-                "\n Message : ${req.message}" +
-                "\n Numéro matricule : ${req.serialNumber}" +
-                "\n Numéro de telephone : ${req.phoneNumber}" +
-                "\n Cordialement," +
-                "\n L'equipe de Weche."
+        return """
+    Bonjour Administrator,
+
+    Une nouvelle demande de prise de contact a été effectuée sur la plateforme. Voici les informations ci-dessous :
+
+    Nom : ${req.name}
+    Email : ${req.email}
+    Message : ${req.message}
+    Numéro matricule : ${req.serialNumber}
+    Numéro de téléphone : ${req.phoneNumber}
+
+    Cordialement,
+
+    L'équipe de Weche
+    """.trimIndent()
     }
+
 
 }

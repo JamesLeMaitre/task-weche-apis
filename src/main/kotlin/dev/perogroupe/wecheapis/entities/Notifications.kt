@@ -1,16 +1,11 @@
 package dev.perogroupe.wecheapis.entities
 
-import jakarta.persistence.Id
-import jakarta.persistence.GeneratedValue
-import jakarta.persistence.GenerationType
-import jakarta.persistence.Entity
-import jakarta.persistence.JoinColumn
-import jakarta.persistence.ManyToOne
+import jakarta.persistence.*
 import lombok.AllArgsConstructor
 import lombok.Data
 import lombok.NoArgsConstructor
 import java.io.Serializable
-import java.util.UUID
+import java.util.*
 
 @Entity
 @Data
@@ -24,10 +19,11 @@ data class Notifications(
     @JoinColumn(name = "user_id")
     val user: User,
     val message: String,
-    var read: Boolean = false
-): Serializable{
+    var read: Boolean = false,
+    var readDate: Date = Date()
+) : Serializable {
 
-    constructor(): this(
+    constructor() : this(
         user = User(),
         message = "",
         read = false

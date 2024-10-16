@@ -18,7 +18,10 @@ data class ContactRequest(
     val subject: String? = null,
     @field:NotNull(message = "Email is required")
     @field:NotBlank(message = "Email is required")
-    @field:Email(message = "Email is not valid", regexp = "^[a-zA-Z0-9_+&*-]+(?:\\.[a-zA-Z0-9_+&*-]+)*@(?:[a-zA-Z0-9-]+\\.)+[a-z]{2,7}$")
+    @field:Email(
+        message = "Email is not valid",
+        regexp = "^[a-zA-Z0-9_+&*-]+(?:\\.[a-zA-Z0-9_+&*-]+)*@(?:[a-zA-Z0-9-]+\\.)+[a-z]{2,7}$"
+    )
     val email: String? = null,
     @field:NotNull(message = "Message is required")
     @field:NotBlank(message = "Message is required")
@@ -29,4 +32,4 @@ data class ContactRequest(
     @field:NotNull(message = "Phone number is required")
     @field:NotBlank(message = "Phone number is required")
     val phoneNumber: String? = null,
-):Serializable
+) : Serializable

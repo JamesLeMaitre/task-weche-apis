@@ -52,4 +52,16 @@ data class Contact(
     override fun toString(): String {
         return "Contact(id=$id, name='$name', subject='$subject', message='$message', serialNumber='$serialNumber', phoneNumber='$phoneNumber')"
     }
+
+    override fun hashCode(): Int {
+        var result = id.hashCode()
+        result = 31 * result + name.hashCode()
+        result = 31 * result + subject.hashCode()
+        result = 31 * result + email.hashCode()
+        result = 31 * result + message.hashCode()
+        result = 31 * result + serialNumber.hashCode()
+        result = 31 * result + phoneNumber.hashCode()
+        result = 31 * result + createdAt.hashCode()
+        return result
+    }
 }

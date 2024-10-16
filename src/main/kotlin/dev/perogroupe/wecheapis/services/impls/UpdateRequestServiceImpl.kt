@@ -6,11 +6,10 @@ import dev.perogroupe.wecheapis.dtos.responses.UpdateRequestResponse
 import dev.perogroupe.wecheapis.entities.Notifications
 import dev.perogroupe.wecheapis.events.CheckRequestStatusEvent
 import dev.perogroupe.wecheapis.exceptions.PendingRequestNotFoundException
+import dev.perogroupe.wecheapis.repositories.NewRequestRepository
 import dev.perogroupe.wecheapis.repositories.PendingRequestRepository
 import dev.perogroupe.wecheapis.repositories.UpdateRequestRepository
-import dev.perogroupe.wecheapis.services.NotificationsService
-import dev.perogroupe.wecheapis.services.PendingRequestService
-import dev.perogroupe.wecheapis.services.UpdateRequestService
+import dev.perogroupe.wecheapis.services.*
 import dev.perogroupe.wecheapis.utils.enums.RequestStatus
 import dev.perogroupe.wecheapis.utils.response
 import dev.perogroupe.wecheapis.utils.toUpdateRequest
@@ -22,10 +21,14 @@ import java.time.Instant
 class UpdateRequestServiceImpl(
     private val repository: UpdateRequestRepository,
     private val pendingReqService: PendingRequestService,
+    private val newRequestService: NewRequestService,
     private val eventPublisher: ApplicationEventPublisher,
     private val pendingRepository: PendingRequestRepository,
-    private val notificationsService: NotificationsService
+    private val newRequestRepository: NewRequestRepository,
+    private val notificationsService: NotificationsService,
+    private val messageService: MessageService,
 ) : UpdateRequestService {
+
     override fun store(request: UpRequest): UpdateRequestResponse {
         val req = request.toUpdateRequest()
         val pendingReq = pendingReqService.updateRequest(request.requestId)
@@ -39,7 +42,7 @@ class UpdateRequestServiceImpl(
         req.request = pendingReq
         val notification = Notifications(
             user = pendingReq.user,
-            message = "Demande ${pendingReq.requestNumber} est à modifier.",
+            message = "Demande N° ${pendingReq.requestNumber} est à modifier.",
             read = false
         )
         notificationsService.store(notification)
@@ -47,12 +50,55 @@ class UpdateRequestServiceImpl(
         return repository.save(req).response()
     }
 
-    override fun show(requestNumber: String): UpdateRequestResponse  {
-        val pendRes = pendingRepository.findByRequestNumber(requestNumber)
-            .orElseThrow { PendingRequestNotFoundException("Request Not found") }
-        return repository.findByRequest(pendRes)
-            .map { it.response() }
-            .orElseThrow { PendingRequestNotFoundException("Request not found") }
+    override fun create(request: UpRequest): UpdateRequestResponse {
+        val req = request.toUpdateRequest()
+        val newRequest = newRequestService.showByRequest(request.requestId)
+        val checkStatus = CheckRequestStatusReq(
+            requestNumber = newRequest.requestNumber!!,
+            requestStatus = RequestStatus.UPDATE,
+            user = newRequest.user!!,
+            comment = request.reason,
+            createByDpafAt = Instant.now()
+        )
+        req.newRequest = newRequest
+        val notification = Notifications(
+            user = newRequest.user,
+            message = "Demande N° ${newRequest.requestNumber} est à modifier.",
+            read = false
+        )
+        // Store the notification
+        notificationsService.store(notification)
 
+        //Send email to user
+        messageService.sendMail(
+            newRequest.user.email,
+            "Demande d'attestation de présence à modifier",
+            """
+    Bonjour ${newRequest.user.firstname},
+
+    Votre demande d'attestation de présence au poste a été rejetée pour la raison suivante :
+    ${request.reason}
+
+    Veuillez vous connecter à la plateforme pour modifier votre demande.
+
+    Cordialement,
+
+    L'équipe Weche
+    """.trimIndent()
+        )
+
+
+
+        // Publish an event for the check request status
+        eventPublisher.publishEvent(CheckRequestStatusEvent(this, checkStatus))
+        return repository.save(req).response()
+    }
+
+    override fun show(requestNumber: String): UpdateRequestResponse  {
+        val newReq = newRequestRepository.findByRequestNumber(requestNumber)
+            .orElseThrow { PendingRequestNotFoundException("New Request Not found") }
+        val list = repository.findAllByNewRequest(newReq)
+        // return the last one and delete the others
+        return list.last().response()
     }
 }

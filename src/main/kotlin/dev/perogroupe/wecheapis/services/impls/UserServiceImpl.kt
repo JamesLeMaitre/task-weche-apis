@@ -3,6 +3,7 @@ package dev.perogroupe.wecheapis.services.impls
 import dev.perogroupe.wecheapis.dtos.requests.UpdatePasswordRequest
 import dev.perogroupe.wecheapis.dtos.requests.UpdateUserRequest
 import dev.perogroupe.wecheapis.dtos.responses.UserResponse
+import dev.perogroupe.wecheapis.entities.User
 import dev.perogroupe.wecheapis.exceptions.UserNotFoundException
 import dev.perogroupe.wecheapis.repositories.UserRepository
 import dev.perogroupe.wecheapis.services.UploadService
@@ -20,6 +21,18 @@ class UserServiceImpl(
     private val passwordEncoder: PasswordEncoder,
     private val uploadService: UploadService,
 ) : UserService {
+
+    /**
+     * Gets a user by their serial number.
+     *
+     * @param authentication The authentication object containing the user's serial number.
+     * @return The user with the provided serial number.
+     * @throws UserNotFoundException If the user with the provided serial number is not found.
+     */
+    override fun getUser(authentication: Authentication): User =
+        repository.findByUsername(authentication.name)
+            .orElseThrow { UserNotFoundException("User with this serial number ${authentication.name} not found") }
+
 
     /**
      * Updates a user's information.
@@ -91,7 +104,9 @@ class UserServiceImpl(
         }
 
         // Generate a unique avatar file name
-        val avatarFileName = "user_${user.username.replace(" ".toRegex(), "_").lowercase()}_avatar.${avatar.originalFilename?.substringAfterLast(".")}"
+        val avatarFileName = "user_${
+            user.username.replace(" ".toRegex(), "_").lowercase()
+        }_avatar.${avatar.originalFilename?.substringAfterLast(".")}"
 
         // Upload the new avatar file
         val updatedAvatarPath = "users/avatars/${user.username.replace(" ".toRegex(), "_").lowercase()}/"

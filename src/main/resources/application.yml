@@ -21,7 +21,9 @@ spring:
           url: jdbc:postgresql://38.242.223.120:5432/dbweche
 #          url: jdbc:postgresql://localhost:5432/weche-db
           username: uweche
+#          username: postgres
           password: passweche
+#          password: root
         dialect: org.hibernate.dialect.PostgreSQLDialect
     show-sql: false
   datasource:
@@ -29,7 +31,9 @@ spring:
 #    url: jdbc:postgresql://localhost:5432/weche-db
     url: jdbc:postgresql://38.242.223.120:5432/dbweche
     username: uweche
+#    username: postgres
     password: passweche
+#    password: root
   security:
     oauth2:
       resource-server:

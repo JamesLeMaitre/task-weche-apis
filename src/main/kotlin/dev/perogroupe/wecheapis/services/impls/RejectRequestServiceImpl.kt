@@ -12,6 +12,7 @@ import dev.perogroupe.wecheapis.repositories.NewRequestRepository
 import dev.perogroupe.wecheapis.repositories.PendingRequestRepository
 import dev.perogroupe.wecheapis.repositories.RejectedRequestRepository
 import dev.perogroupe.wecheapis.repositories.UserRepository
+import dev.perogroupe.wecheapis.services.MessageService
 import dev.perogroupe.wecheapis.services.NotificationsService
 import dev.perogroupe.wecheapis.services.RejectRequestService
 import dev.perogroupe.wecheapis.utils.enums.RequestStatus
@@ -32,7 +33,8 @@ class RejectRequestServiceImpl(
     private val repository: RejectedRequestRepository,
     private val pendingRequestRepository: PendingRequestRepository,
     private val userRepository: UserRepository,
-    private val notificationsService: NotificationsService
+    private val notificationsService: NotificationsService,
+    private val messageService: MessageService
 ) :RejectRequestService{
     override fun store(request: RejectedRequestReq): RejectedRequestResponse = newRequestRepository
         .findByRequestNumber(request.requestId)
@@ -43,14 +45,33 @@ class RejectRequestServiceImpl(
                 requestStatus = RequestStatus.REJECTED,
                 user = it.user!!,
                 comment = request.reason,
-                createdBySupAt = Instant.now()
+                createdBySupAt = Instant.now(),
+                createByDpafAt = Instant.now()
             )
             eventPublisher.publishEvent(CheckRequestStatusEvent(this, req))
             val notification = Notifications(
                 user = it.user,
-                message = "Demande ${it.requestNumber} a été rejetée.",
+                message = "Demande N° ${it.requestNumber} a été rejetée.",
                 read = false
             )
+             // Send email to user
+            messageService.sendMail(
+                it.user.email,
+                "Demande d'attestation de présence rejetée",
+                """
+    Bonjour ${it.user.firstname},
+
+    Votre demande d'attestation de présence au poste a été rejetée pour la raison suivante :
+    ${request.reason}
+
+    Veuillez vous connecter à la plateforme pour resoumettre une autre demande.
+
+    Cordialement,
+
+    L'équipe Weche
+    """.trimIndent()
+            )
+
             notificationsService.store(notification)
             repository.save(it.toRejectedRequest().copy(rejectReason = request.reason))
         }.orElseThrow { RejectedRequestNotFoundException("New request with id ${request.requestId} not found") }
@@ -70,7 +91,7 @@ class RejectRequestServiceImpl(
             eventPublisher.publishEvent(CheckRequestStatusEvent(this, req))
             val notification = Notifications(
                 user = it.user,
-                message = "Demande ${it.requestNumber} a été rejetée.",
+                message = "Demande N° ${it.requestNumber} a été rejetée.",
                 read = false
             )
             notificationsService.store(notification)

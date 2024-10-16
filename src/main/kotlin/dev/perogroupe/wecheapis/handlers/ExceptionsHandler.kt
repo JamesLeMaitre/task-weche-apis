@@ -126,4 +126,16 @@ class ExceptionsHandler {
         return errorResponse(NOT_FOUND, exception.message!!)
     }
 
+    @ExceptionHandler(ValidityCheckException::class)
+    fun checkValidityException(exception: ValidityCheckException): ResponseEntity<Error> {
+        logs.info("{}", exception.message)
+        return errorResponse(TOO_EARLY, exception.message!!)
+    }
+
+    @ExceptionHandler(DocumentRecordNotFoundException::class)
+    fun documentRecordException(exception: DocumentRecordNotFoundException): ResponseEntity<Error> {
+        logs.info("{}", exception.message)
+        return errorResponse(NOT_FOUND, exception.message!!)
+    }
+
 }

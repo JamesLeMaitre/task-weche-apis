@@ -27,11 +27,11 @@ data class NewRequest(
     @ManyToOne
     @JoinColumn(name = "structure")
     val structure: Structure? = null,
-    val civilName: String,
+//    val civilName: String,
     val createdAt: Instant = Instant.now(),
-    val startPeriod: Date,
-    val endPeriod: Date,
-    val dateOfFirstEntryService: Date,
+//    val startPeriod: Date,
+//    val endPeriod: Date,
+//    val dateOfFirstEntryService: Date,
     @ManyToOne
     @JoinColumn(name = "appointment_decree")
     val appointmentDecree: File? = null,
@@ -39,34 +39,73 @@ data class NewRequest(
     @JoinColumn(name = "handing_over")
     val handingOver: File? = null,
     val requestNumber: String? = null,
-    val firstNameOfPreviousOfficial: String,
-    val lastNameOfPreviousOfficial: String,
-    val serialNumberOfPreviousOfficial: String,
-    val gradeOfPreviousOfficial: String,
-    val positionHeldOfPreviousOfficial: String,
-    val bodyOfPreviousOfficial: String,
+//    val firstNameOfPreviousOfficial: String,
+//    val lastNameOfPreviousOfficial: String,
+//    val serialNumberOfPreviousOfficial: String,
+//    val gradeOfPreviousOfficial: String,
+//    val positionHeldOfPreviousOfficial: String,
+//    val bodyOfPreviousOfficial: String,
     val title: String = "Attestation de présence au poste",
     @Enumerated(EnumType.STRING)
-    val requestStatus: RequestStatus,
+    var requestStatus: RequestStatus,
     @ManyToOne
     @JoinColumn(name = "requesting_user")
-    val user : User? = null
-) : Serializable {
+    val user: User? = null,
 
-    constructor(): this(
+    // FIXME: Add a new attributes to the NewRequest class
+    @ManyToOne
+    @JoinColumn(name = "beneficiary")
+    val beneficiary: Beneficiary? = null,
+//    val firstName: String? = null,
+//    val lastName: String? = null,
+    val structureId: String? = null,
+    val serialNumber: String? = null,
+    val body: String? = null, // Corps
+    val grade: String? = null, // Grade
+    val gradeDate: Date? = null, // Grade date
+    val ua: String? = null, // UA
+    val positionHeld: String? = null, // Poste de l'agent
+//
+
+    // For second select beneficiary
+    val firstNameOfPreviousOfficial: String? = null,
+    val lastNameOfPreviousOfficial: String? = null,
+    val fonction: String? = null,
+    val dateFonction: Date? = null,
+    val serialNumberOfPreviousOfficial: String? = null,
+    // Step 2 attributes
+//    val agentPosition: String? = null,
+    val ppsDate: Date? = null,
+    val uaDate: Date? = null, // Date d'entrée àl'UA
+
+    ) :  Serializable {
+
+    constructor() : this(
         firstName = "",
         lastName = "",
-        civilName = "",
-        startPeriod = Date(),
-        endPeriod = Date(),
-        dateOfFirstEntryService = Date(),
+//        startPeriod = Date(),
+//        endPeriod = Date(),
+//        dateOfFirstEntryService = Date(),
         firstNameOfPreviousOfficial = "",
         lastNameOfPreviousOfficial = "",
         serialNumberOfPreviousOfficial = "",
-        gradeOfPreviousOfficial = "",
-        positionHeldOfPreviousOfficial = "",
-        bodyOfPreviousOfficial = "",
+//        gradeOfPreviousOfficial = "",
+//        positionHeldOfPreviousOfficial = "",
+//        bodyOfPreviousOfficial = "",
         requestStatus = RequestStatus.NEW,
+
+        serialNumber = "",
+        grade = "",
+        gradeDate = Date(),
+        ua = "",
+        positionHeld = "",
+//        agentPosition = "",
+        ppsDate = Date(),
+        uaDate = Date(),
+        fonction = "",
+        dateFonction = Date(),
+        body = "",
+
     )
 
     override fun equals(other: Any?): Boolean {

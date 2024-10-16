@@ -1,25 +1,27 @@
 package dev.perogroupe.wecheapis.services.impls
 
 import dev.perogroupe.wecheapis.dtos.requests.CheckRequestStatusReq
+import dev.perogroupe.wecheapis.dtos.requests.CheckValidityRequest
+import dev.perogroupe.wecheapis.dtos.requests.DnrRequest
 import dev.perogroupe.wecheapis.dtos.responses.ApprovedRequestResponse
 import dev.perogroupe.wecheapis.entities.Notifications
 import dev.perogroupe.wecheapis.events.CheckRequestStatusEvent
 import dev.perogroupe.wecheapis.exceptions.ApprovedRequestNotFoundException
 import dev.perogroupe.wecheapis.exceptions.UserNotFoundException
 import dev.perogroupe.wecheapis.repositories.ApprovedRequestRepository
+import dev.perogroupe.wecheapis.repositories.NewRequestRepository
 import dev.perogroupe.wecheapis.repositories.PendingRequestRepository
 import dev.perogroupe.wecheapis.repositories.UserRepository
-import dev.perogroupe.wecheapis.services.ApprovedRequestService
-import dev.perogroupe.wecheapis.services.NotificationsService
+import dev.perogroupe.wecheapis.services.*
 import dev.perogroupe.wecheapis.utils.enums.RequestStatus
 import dev.perogroupe.wecheapis.utils.response
 import dev.perogroupe.wecheapis.utils.toApprovedRequest
 import dev.perogroupe.wecheapis.ws.services.WSService
 import org.springframework.context.ApplicationEventPublisher
-import org.springframework.data.domain.Page
 import org.springframework.security.core.Authentication
 import org.springframework.stereotype.Service
 import java.time.Instant
+import java.util.*
 
 @Service
 class ApprovedRequestServiceImpl(
@@ -29,6 +31,10 @@ class ApprovedRequestServiceImpl(
     private val eventPublisher: ApplicationEventPublisher,
     private val userRepository: UserRepository,
     private val notificationsService: NotificationsService,
+    private val newRequestRepository: NewRequestRepository,
+    private val messageService: MessageService,
+    private val dnrService: DnrService,
+    private val checkValidityService: CheckValidityService,
 ) : ApprovedRequestService {
     /**
      * Store the approved request based on the provided ID.
@@ -50,18 +56,30 @@ class ApprovedRequestServiceImpl(
                 createByDpafAt = Instant.now()
             )
 
+            // Write the DNR
+            dnrService.createDnr(DnrRequest(it.user, Date(), true, it.requestNumber))
             // Send a message via WebSocket service
-            wsService.sendMessage("Demande ${it.requestNumber} a été validée.")
+            wsService.sendMessage("Demande N° ${it.requestNumber} a été validée.")
 
             // Create a notification for the approved request
             val notification = Notifications(
                 user = it.user,
-                message = "Demande ${it.requestNumber} a été validée.",
+                message = "Demande N° ${it.requestNumber} a été validée.",
                 read = false
             )
 
             // Store the notification
             notificationsService.store(notification)
+
+            // Create a check validity
+            val checkValidity = CheckValidityRequest(
+                user = it.user,
+                appDocument = true,
+                appDnr = false,
+                appDocumentDateDelivery = Instant.now(),
+                appDnrDateDelivery = Instant.now()
+            )
+            checkValidityService.store(checkValidity)
 
             // Publish an event for the approved request
             eventPublisher.publishEvent(CheckRequestStatusEvent(this, req))
@@ -76,6 +94,75 @@ class ApprovedRequestServiceImpl(
             saved.response()
         }
 
+    override fun create(id: String): ApprovedRequestResponse = newRequestRepository
+        .findById(id)
+        .map { newRequestRepository.save(it.copy(requestStatus = RequestStatus.DONE)) }
+        .map {
+            // Create a CheckRequestStatusReq object for the approved request
+            val req = CheckRequestStatusReq(
+                requestNumber = it.requestNumber!!,
+                requestStatus = RequestStatus.APPROVED,
+                user = it.user!!,
+                comment = "Approved",
+                createByDpafAt = Instant.now()
+            )
+
+            // Create a check validity
+            val checkValidity = CheckValidityRequest(
+                user = it.user,
+                appDocument = true,
+                appDnr = false,
+                appDocumentDateDelivery = Instant.now(),
+                appDnrDateDelivery = Instant.now()
+            )
+            checkValidityService.store(checkValidity)
+
+            // Write the DNR
+            dnrService.createDnr(DnrRequest(it.user, Date(), true, it.requestNumber))
+
+            // Send a message via WebSocket service
+            wsService.sendMessage("Demande N° ${it.requestNumber} a été validée.")
+
+            // Create a notification for the approved request
+            val notification = Notifications(
+                user = it.user,
+                message = "Demande N° ${it.requestNumber} a été validée.",
+                read = false
+            )
+
+
+
+            // Store the notification
+            notificationsService.store(notification)
+            // Send email to user
+            messageService.sendMail(
+                it.user.email,
+                "Demande d'attestation de présence validée",
+                """
+    Bonjour ${it.user.firstname},
+
+    Nous avons le plaisir de vous informer que votre demande d'attestation de présence au poste a été validée.
+
+    Veuillez vous connecter à la plateforme pour télécharger le document.
+
+    Cordialement,
+
+    L'équipe Weche
+    """.trimIndent()
+            )
+
+            // Publish an event for the approved request
+            eventPublisher.publishEvent(CheckRequestStatusEvent(this, req))
+
+            it
+        }
+        .orElseThrow { ApprovedRequestNotFoundException("New request not found") }
+        .toApprovedRequest()
+        .let {
+            // Save the approved request to the repository and return the response
+            val saved = repository.save(it)
+            saved.response()
+        }
 
 
     /**

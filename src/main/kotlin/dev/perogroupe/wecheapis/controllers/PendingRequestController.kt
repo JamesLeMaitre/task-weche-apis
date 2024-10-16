@@ -72,7 +72,7 @@ class PendingRequestController(
             "Pending request set for update successfully!", OK, service.update(request)
         )
 
-    @PostMapping("update-file/{id}")
+/*    @PostMapping("update-file/{id}")
     @PreAuthorize("hasRole('ROLE_USER')")
     fun updateFileUseRequest(
         @RequestParam("appointmentDecree", required = false, defaultValue = "") appointmentDecree: MultipartFile,
@@ -81,6 +81,44 @@ class PendingRequestController(
         successResponse(
             "Pending request set for update successfully!", OK, service.upload(
                 appointmentDecree, handingOver, id,
+                SecurityContextHolder.getContext().authentication
+            )
+        )*/
+
+
+    @PostMapping("update-file/{id}")
+    @PreAuthorize("hasRole('ROLE_USER')")
+    fun updateFileUseRequest(
+        @RequestParam("appointmentDecree", required = false, defaultValue = "") appointmentDecree: MultipartFile,
+        @RequestParam("handingOver", required = false) handingOver: MultipartFile, @PathVariable id: String,
+    ): ResponseEntity<HttpResponse> =
+        successResponse(
+            "Pending request set for update successfully!", OK, service.uploadNew(
+                appointmentDecree, handingOver, id,
+                SecurityContextHolder.getContext().authentication
+            )
+        )
+
+    @PostMapping("update-file-handing-over/{id}")
+    @PreAuthorize("hasRole('ROLE_USER')")
+    fun updateFileHandingOverUseRequest(
+        @RequestParam("handingOver", required = false) handingOver: MultipartFile, @PathVariable id: String,
+    ): ResponseEntity<HttpResponse> =
+        successResponse(
+            "Pending request set for update handing over successfully!", OK, service.uploadHandingOver(
+                handingOver, id,
+                SecurityContextHolder.getContext().authentication
+            )
+        )
+
+    @PostMapping("update-file-appointment-decree/{id}")
+    @PreAuthorize("hasRole('ROLE_USER')")
+    fun updateFileAppointmentDecreeUseRequest(
+        @RequestParam("appointmentDecree", required = false) handingOver: MultipartFile, @PathVariable id: String,
+    ): ResponseEntity<HttpResponse> =
+        successResponse(
+            "Pending request set for update appointment decree successfully!", OK, service.uploadAppointmentDecree(
+                handingOver, id,
                 SecurityContextHolder.getContext().authentication
             )
         )

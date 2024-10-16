@@ -41,6 +41,7 @@ class AppSecurityConfig(
                 // Allow access to specific endpoints
                 authorization.requestMatchers(
                     API_BASE_URL + "login",
+                    API_BASE_URL + "document-record/search/**",
                     API_BASE_URL + "register",
                     API_BASE_URL + "user/**",
                     API_BASE_URL + "new-request/user/**",

@@ -1,6 +1,7 @@
 package dev.perogroupe.wecheapis.services
 
 import dev.perogroupe.wecheapis.dtos.requests.UpdateRequestReq
+import dev.perogroupe.wecheapis.dtos.responses.NewRequestResponse
 import dev.perogroupe.wecheapis.dtos.responses.PendingRequestResponse
 import dev.perogroupe.wecheapis.entities.PendingRequest
 import org.springframework.data.domain.Page
@@ -25,4 +26,12 @@ interface PendingRequestService {
 
     fun upload( appointmentDecree: MultipartFile,
                 handingOver: MultipartFile,id: String,authentication: Authentication): PendingRequestResponse
+
+    fun uploadNew( appointmentDecree: MultipartFile,
+                handingOver: MultipartFile,id: String,authentication: Authentication): NewRequestResponse
+
+
+    fun uploadAppointmentDecree(appointmentDecree: MultipartFile, id: String,authentication: Authentication): NewRequestResponse
+
+    fun uploadHandingOver(handingOver: MultipartFile,id: String,authentication: Authentication): NewRequestResponse
 }

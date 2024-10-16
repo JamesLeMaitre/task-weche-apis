@@ -34,7 +34,7 @@ class UpdateRequestController(
      * @return A response entity with the result of the update operation.
      */
     @PostMapping("")
-    @PreAuthorize("hasRole('ROLE_SUPER_ADMIN')")
+    @PreAuthorize("hasAnyRole('ROLE_ADMIN', 'ROLE_SUPER_ADMIN')")
     fun updateFile(@ModelAttribute @Valid request: UpRequest, result: BindingResult): ResponseEntity<HttpResponse> {
         // Check for validation errors
         return if (result.hasErrors()) {
@@ -42,6 +42,19 @@ class UpdateRequestController(
         } else {
             // If there are no errors, update the file and return a success response
             successResponse("Request set for update successfully!", CREATED, service.store(request))
+        }
+    }
+
+
+    @PostMapping("store")
+    @PreAuthorize("hasAnyRole('ROLE_ADMIN')")
+    fun updateFileByAdmin(@ModelAttribute @Valid request: UpRequest, result: BindingResult): ResponseEntity<HttpResponse> {
+        // Check for validation errors
+        return if (result.hasErrors()) {
+            validationErrorResponse(result.fieldErrors)
+        } else {
+            // If there are no errors, update the file and return a success response
+            successResponse("Request set for update successfully!", CREATED, service.create(request))
         }
     }
 

@@ -156,6 +156,13 @@ class AuthenticationController (
         return successResponse("User Structure Updated", OK, updatedUserDetails)
     }
 
+    /**
+     * Updates the user's password.
+     *
+     * @param request The update password request containing the new password.
+     * @param result The binding result containing any validation errors.
+     * @return A ResponseEntity containing the result of the update.
+     */
     @PostMapping("update-password", consumes = [APPLICATION_FORM_URLENCODED_VALUE])
     fun updatePassword(@ModelAttribute @Valid request: UpdatePasswordRequest, result: BindingResult): ResponseEntity<HttpResponse> =
         if (result.hasErrors()) {

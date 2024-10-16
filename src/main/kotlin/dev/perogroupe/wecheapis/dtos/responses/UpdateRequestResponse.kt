@@ -11,5 +11,6 @@ data class UpdateRequestResponse(
     val appointmentDecree: Boolean,
     val handingOver: Boolean,
     val reason: String,
-    var request: PendingRequestResponse? = null
+    var request: PendingRequestResponse? = null,
+    var newRequest: NewRequestResponse? = null
 )

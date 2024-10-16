@@ -4,6 +4,8 @@ import dev.perogroupe.wecheapis.services.PdfService
 import dev.perogroupe.wecheapis.utils.API_BASE_URL
 import org.springframework.http.MediaType.APPLICATION_JSON_VALUE
 import org.springframework.http.ResponseEntity
+import org.springframework.security.access.prepost.PreAuthorize
+import org.springframework.security.core.context.SecurityContextHolder
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.RequestMapping
@@ -22,11 +24,26 @@ class PdfController(
      * @return A ResponseEntity containing the generated PDF as a byte array.
      */
     @GetMapping("pdf/{requestNumber}")
+    @PreAuthorize("hasRole('ROLE_USER')")
     fun generatePdf(@PathVariable requestNumber: String): ResponseEntity<ByteArray> {
         // Generate the PDF using the provided request number
-        val pdfBytes = service.generatePdf(requestNumber)
+        val pdfBytes = service.checkWhichFileDelivered(requestNumber)
 
         // Return the generated PDF as a ResponseEntity
         return ResponseEntity.ok(pdfBytes)
+    }
+
+    @GetMapping("dnr")
+    @PreAuthorize("hasRole('ROLE_USER')")
+    fun generateDnr(): ResponseEntity<ByteArray> {
+        // Return the generated DNR as a ResponseEntity
+        return ResponseEntity.ok(service.generateDnr(SecurityContextHolder.getContext().authentication))
+    }
+
+    @GetMapping("validity")
+    @PreAuthorize("hasRole('ROLE_USER')")
+    fun generateValidPdf(): ResponseEntity<ByteArray> {
+        // Return the generated DNR as a ResponseEntity
+        return ResponseEntity.ok(service.generateValidityPdf(SecurityContextHolder.getContext().authentication))
     }
 }

@@ -32,6 +32,7 @@ data class User(
     val email: String = "",
     var isNotLocked: Boolean = false,
     val birthdate: Date = Date(),
+    val placeOfBirth: String = "",
     val createdAt: Instant = Instant.now(),
     val profession: String = "",
     @ManyToOne
@@ -48,7 +49,19 @@ data class User(
     )
     val roles: MutableList<Role> = mutableListOf(),
     var requestNumber: String? = null,
-    var hasRequested: Boolean = false
+    var hasRequested: Boolean = false,
+
+    val body: String, // Corps
+    val grade: String, // Grade
+    val gradeDate: Date, // Grade date
+    val ppsDate: Date,
+    val ua: String? = null, // UA
+
+    val oldUserFirstname: String,
+    val oldUserLastname: String,
+    val oldUserSerialNumber: String,
+    val dateRetreat: Date? = null,
+
 ) : Serializable {
 
     constructor() : this(
@@ -63,7 +76,15 @@ data class User(
         email = "",
         createdAt = Instant.now(),
         isNotLocked = false,
-        avatar = null
+        avatar = null,
+        body = "",
+        grade = "",
+        gradeDate = Date(),
+        ppsDate = Date(),
+        oldUserFirstname = "",
+        oldUserLastname = "",
+        oldUserSerialNumber = "",
+        placeOfBirth = ""
     )
 
     /**

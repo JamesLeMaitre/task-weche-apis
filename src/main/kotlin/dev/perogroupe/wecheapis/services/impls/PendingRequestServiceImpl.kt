@@ -2,6 +2,7 @@ package dev.perogroupe.wecheapis.services.impls
 
 import dev.perogroupe.wecheapis.dtos.requests.CheckRequestStatusReq
 import dev.perogroupe.wecheapis.dtos.requests.UpdateRequestReq
+import dev.perogroupe.wecheapis.dtos.responses.NewRequestResponse
 import dev.perogroupe.wecheapis.dtos.responses.PendingRequestResponse
 import dev.perogroupe.wecheapis.entities.Notifications
 import dev.perogroupe.wecheapis.entities.PendingRequest
@@ -9,11 +10,8 @@ import dev.perogroupe.wecheapis.events.CheckRequestStatusEvent
 import dev.perogroupe.wecheapis.exceptions.NewRequestNotFoundException
 import dev.perogroupe.wecheapis.exceptions.PendingRequestNotFoundException
 import dev.perogroupe.wecheapis.exceptions.UserNotFoundException
-import dev.perogroupe.wecheapis.repositories.CheckRequestStatusRepository
-import dev.perogroupe.wecheapis.repositories.NewRequestRepository
-import dev.perogroupe.wecheapis.repositories.PendingRequestRepository
-import dev.perogroupe.wecheapis.repositories.RoleRepository
-import dev.perogroupe.wecheapis.repositories.UserRepository
+import dev.perogroupe.wecheapis.repositories.*
+import dev.perogroupe.wecheapis.services.MessageService
 import dev.perogroupe.wecheapis.services.NotificationsService
 import dev.perogroupe.wecheapis.services.PendingRequestService
 import dev.perogroupe.wecheapis.services.UploadService
@@ -32,12 +30,14 @@ import java.time.Instant
 @Service
 class PendingRequestServiceImpl(
     private val repository: PendingRequestRepository,
+
     private val newRequestRepository: NewRequestRepository,
     private val eventPublisher: ApplicationEventPublisher,
     private val notificationsService: NotificationsService,
     private val userRepository: UserRepository,
     private val uploadService: UploadService,
     private val checkStatusRepository: CheckRequestStatusRepository,
+    private val messageService: MessageService,
     private val roleRepository: RoleRepository,
 ) : PendingRequestService {
 
@@ -73,11 +73,32 @@ class PendingRequestServiceImpl(
                 // Create a notification for the supervisor
                 val notification = Notifications(
                     user = userSupervisor,
-                    message = "Demande ${it.requestNumber} est en attente.",
+                    message = "Demande N° ${it.requestNumber} est en attente.",
                     read = false
                 )
                 // Store the notification
                 notificationsService.store(notification)
+
+                // Send email to supervisor
+                messageService.sendMail(
+                    userSupervisor.email,
+                    "Demande d'attestation de présence au poste en attente",
+                    """
+    Bonjour Administrateur,
+
+    Une nouvelle demande d'attestation de présence au poste a été envoyée sur la plateforme. Voici les informations ci-dessous :
+
+    Nom : ${it.firstName} ${it.lastName}
+    Email : ${it.user.email}
+    Numéro matricule : ${it.serialNumber}
+
+    Cordialement,
+
+    L'équipe Weche
+    """.trimIndent()
+                )
+
+
                 // Publish an event for the check request status
                 eventPublisher.publishEvent(CheckRequestStatusEvent(this, req))
                 it
@@ -171,7 +192,6 @@ class PendingRequestServiceImpl(
         .orElseThrow { NewRequestNotFoundException("Pending request with id $id not found") }
 
 
-
     /**
      * Counts the number of pending requests for a given user.
      *
@@ -211,45 +231,7 @@ class PendingRequestServiceImpl(
         id: String,
         authentication: Authentication,
     ): PendingRequestResponse = repository.findById(id).map {
-        if (handingOver == null) {
-            // Copy the request with updated appointmentDecree and same handingOver
-            val newRequest = it.copy(
-                appointmentDecree = uploadService.uploadFile(
-                    appointmentDecree,
-                    "user_${appointmentDecree.originalFilename?.replace(" ".toRegex(), "_")?.lowercase()}_avatar.${
-                        appointmentDecree.originalFilename?.substringAfterLast(".")
-                    }",
-                    "users/avatars/${appointmentDecree.originalFilename?.replace(" ".toRegex(), "_")?.lowercase()}/"
-                ),
-                handingOver = it.handingOver
-            )
-            // Update request status to PENDING
-            val checkRequest = checkStatusRepository.findByRequestNumber(newRequest.requestNumber!!)
-                .orElseThrow { PendingRequestNotFoundException("Request not found") }
-            checkRequest.requestStatus = RequestStatus.PENDING
-            checkStatusRepository.save(checkRequest)
-            repository.save(newRequest)
-            it.response()
-        } else if (appointmentDecree == null) {
-            // Copy the request with updated handingOver and same appointmentDecree
-            val newRequest = it.copy(
-                appointmentDecree = it.appointmentDecree,
-                handingOver = uploadService.uploadFile(
-                    handingOver,
-                    "user_${handingOver.originalFilename?.replace(" ".toRegex(), "_")?.lowercase()}_avatar.${
-                        handingOver.originalFilename?.substringAfterLast(".")
-                    }",
-                    "users/avatars/${handingOver.originalFilename?.replace(" ".toRegex(), "_")?.lowercase()}/"
-                )
-            )
-            // Update request status to PENDING
-            val checkRequest = checkStatusRepository.findByRequestNumber(newRequest.requestNumber!!)
-                .orElseThrow { PendingRequestNotFoundException("Request not found") }
-            checkRequest.requestStatus = RequestStatus.PENDING
-            checkStatusRepository.save(checkRequest)
-            repository.save(newRequest)
-            it.response()
-        } else {
+        run {
             // Copy the request with updated appointmentDecree and handingOver
             val newRequest = it.copy(
                 appointmentDecree = uploadService.uploadFile(
@@ -276,5 +258,127 @@ class PendingRequestServiceImpl(
             it.response()
         }
     }.orElseThrow { NewRequestNotFoundException("Pending request with id $id not found") }
+
+
+    override fun uploadNew(
+        appointmentDecree: MultipartFile,
+        handingOver: MultipartFile,
+        id: String,
+        authentication: Authentication,
+    ): NewRequestResponse = newRequestRepository.findById(id).map {
+        if (handingOver == null) {
+            // Copy the request with updated appointmentDecree and same handingOver
+            val newRequest = it.copy(
+                appointmentDecree = uploadService.uploadFile(
+                    appointmentDecree,
+                    "user_${appointmentDecree.originalFilename?.replace(" ".toRegex(), "_")?.lowercase()}_avatar.${
+                        appointmentDecree.originalFilename?.substringAfterLast(".")
+                    }",
+                    "users/avatars/${appointmentDecree.originalFilename?.replace(" ".toRegex(), "_")?.lowercase()}/"
+                ),
+                handingOver = it.handingOver
+            )
+            // Update request status to PENDING
+            val checkRequest = checkStatusRepository.findByRequestNumber(newRequest.requestNumber!!)
+                .orElseThrow { PendingRequestNotFoundException("Request not found") }
+            checkRequest.requestStatus = RequestStatus.NEW
+            checkStatusRepository.save(checkRequest)
+            newRequestRepository.save(newRequest)
+            it.response()
+        } else if (appointmentDecree == null) {
+            // Copy the request with updated handingOver and same appointmentDecree
+            val newRequest = it.copy(
+                appointmentDecree = it.appointmentDecree,
+                handingOver = uploadService.uploadFile(
+                    handingOver,
+                    "user_${handingOver.originalFilename?.replace(" ".toRegex(), "_")?.lowercase()}_avatar.${
+                        handingOver.originalFilename?.substringAfterLast(".")
+                    }",
+                    "users/avatars/${handingOver.originalFilename?.replace(" ".toRegex(), "_")?.lowercase()}/"
+                ), requestStatus = RequestStatus.NEW
+            )
+            // Update request status to PENDING
+            val checkRequest = checkStatusRepository.findByRequestNumber(newRequest.requestNumber!!)
+                .orElseThrow { PendingRequestNotFoundException("Request not found") }
+            checkRequest.requestStatus = RequestStatus.NEW
+            checkStatusRepository.save(checkRequest)
+            newRequestRepository.save(newRequest)
+            it.response()
+        } else {
+            // Copy the request with updated appointmentDecree and handingOver
+            val newRequest = it.copy(
+                appointmentDecree = uploadService.uploadFile(
+                    appointmentDecree,
+                    "user_${appointmentDecree.originalFilename?.replace(" ".toRegex(), "_")?.lowercase()}_avatar.${
+                        appointmentDecree.originalFilename?.substringAfterLast(".")
+                    }",
+                    "users/avatars/${appointmentDecree.originalFilename?.replace(" ".toRegex(), "_")?.lowercase()}/"
+                ),
+                handingOver = uploadService.uploadFile(
+                    handingOver,
+                    "user_${handingOver.originalFilename?.replace(" ".toRegex(), "_")?.lowercase()}_avatar.${
+                        handingOver.originalFilename?.substringAfterLast(".")
+                    }",
+                    "users/avatars/${handingOver.originalFilename?.replace(" ".toRegex(), "_")?.lowercase()}/"
+                ), requestStatus = RequestStatus.NEW
+            )
+            // Update request status to PENDING
+            val checkRequest = checkStatusRepository.findByRequestNumber(newRequest.requestNumber!!)
+                .orElseThrow { PendingRequestNotFoundException("Request not found") }
+            checkRequest.requestStatus = RequestStatus.NEW
+            checkStatusRepository.save(checkRequest)
+            newRequestRepository.save(newRequest)
+            it.response()
+        }
+    }.orElseThrow { NewRequestNotFoundException("Pending request with id $id not found") }
+
+    override fun uploadAppointmentDecree(
+        appointmentDecree: MultipartFile,
+        id: String,
+        authentication: Authentication
+    ): NewRequestResponse = newRequestRepository.findById(id).map {
+        val newRequest = it.copy(
+            appointmentDecree = uploadService.uploadFile(
+                appointmentDecree,
+                "${appointmentDecree.originalFilename?.replace(" ".toRegex(), "_")?.lowercase()}",
+                "users/avatars/${appointmentDecree.originalFilename?.replace(" ".toRegex(), "_")?.lowercase()}/"
+            )
+        )
+            .copy(handingOver = it.handingOver, requestStatus = RequestStatus.NEW)
+        // Update request status to PENDING
+        val checkRequest = checkStatusRepository.findByRequestNumber(newRequest.requestNumber!!)
+            .orElseThrow { PendingRequestNotFoundException("Request not found") }
+        checkRequest.requestStatus = RequestStatus.NEW
+        checkStatusRepository.save(checkRequest)
+        newRequestRepository.save(newRequest)
+        it.response()
+    }.orElseThrow { NewRequestNotFoundException("Pending request with id $id not found") }
+
+    override fun
+            uploadHandingOver(
+        handingOver: MultipartFile,
+        id: String,
+        authentication: Authentication
+    ): NewRequestResponse = newRequestRepository.findById(id).map {
+        val newRequest = it.copy(
+            handingOver = uploadService.uploadFile(
+                handingOver,
+                "${handingOver.originalFilename?.replace(" ".toRegex(), "_")?.lowercase()}",
+                "users/avatars/${handingOver.originalFilename?.replace(" ".toRegex(), "_")?.lowercase()}/"
+            )
+        )
+            .copy(appointmentDecree = it.appointmentDecree, requestStatus = RequestStatus.NEW)
+
+        // Update request status to PENDING
+        val checkRequest = checkStatusRepository.findByRequestNumber(newRequest.requestNumber!!)
+            .orElseThrow { PendingRequestNotFoundException("Request not found") }
+        checkRequest.requestStatus = RequestStatus.NEW
+        checkStatusRepository.save(checkRequest)
+        newRequestRepository.save(newRequest)
+        it.response()
+    }.orElseThrow {
+        NewRequestNotFoundException("Pending request with id $id not found")
+
+    }
 
 }

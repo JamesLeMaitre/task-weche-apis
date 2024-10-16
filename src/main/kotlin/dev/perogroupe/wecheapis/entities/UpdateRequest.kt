@@ -29,6 +29,9 @@ data class UpdateRequest(
     @ManyToOne
     @JoinColumn(name = "pending_request_id")
     var request: PendingRequest? = null,
+    @ManyToOne
+    @JoinColumn(name = "new_request_id")
+    var newRequest: NewRequest? = null,
     val createAt: Instant = Instant.now()
 ): Serializable{
     constructor(): this(

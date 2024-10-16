@@ -7,6 +7,8 @@ import dev.perogroupe.wecheapis.repositories.UserRepository
 import dev.perogroupe.wecheapis.services.NotificationsService
 import org.springframework.security.core.Authentication
 import org.springframework.stereotype.Service
+import java.util.*
+import kotlin.NoSuchElementException
 
 @Service
 class NotificationsServiceImpl(
@@ -41,6 +43,7 @@ class NotificationsServiceImpl(
 
         // Mark the notification as read
         notification.read = true
+        notification.readDate = Date()
 
         // Save the updated notification
         return repository.save(notification)

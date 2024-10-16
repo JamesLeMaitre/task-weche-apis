@@ -93,7 +93,7 @@ class UploadServiceImpl(
 
     fun upload(file: MultipartFile, fileName: String, originFilePath: String): String {
 //        val fileName = file.originalFilename ?: throw IllegalArgumentException("Invalid file name")
-        var finalName = fileName
+        val finalName = fileName
         // Check if the file is pdf
        /* if (file.contentType == "application/pdf") {
            finalName = "$fileName.pdf"
@@ -134,8 +134,6 @@ class UploadServiceImpl(
             // Handle file not found
             return handleFileNotFound()
         }
-
-
         // Load the file and return a ByteArrayResource
         return ByteArrayResource(Files.readAllBytes(filePathDir))
     }

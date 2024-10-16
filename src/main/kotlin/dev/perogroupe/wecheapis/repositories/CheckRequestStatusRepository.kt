@@ -1,16 +1,16 @@
 package dev.perogroupe.wecheapis.repositories
 
 import dev.perogroupe.wecheapis.entities.CheckRequestStatus
-import dev.perogroupe.wecheapis.entities.Structure
 import dev.perogroupe.wecheapis.entities.User
 import dev.perogroupe.wecheapis.utils.enums.RequestStatus
 import org.springframework.data.jpa.repository.JpaRepository
 import org.springframework.data.jpa.repository.Query
 import java.time.Instant
-import java.util.Optional
+import java.util.*
 
 interface CheckRequestStatusRepository : JpaRepository<CheckRequestStatus, String> {
     fun searchCheckRequestStatusByRequestNumber(requestNumber: String): Optional<CheckRequestStatus>
+
     fun existsCheckRequestStatusByRequestNumber(requestNumber: String): Boolean
 
     fun findByRequestNumber(requestNumber: String): Optional<CheckRequestStatus>
@@ -25,7 +25,10 @@ interface CheckRequestStatusRepository : JpaRepository<CheckRequestStatus, Strin
     fun findAllByStructureIdOrderByCreatedAtDesc(structureId: String): List<CheckRequestStatus>
 
     @Query("SELECT c FROM CheckRequestStatus c WHERE c.structure.id = ?1 AND c.createByDpafAt < ?2 order by c.createByDpafAt desc")
-    fun findAllByRequestStatusIsNotAndAndCreateByDpafAtIsNotNull(structureId: String, createByDpafAt: Instant): List<CheckRequestStatus>
+    fun findAllByRequestStatusIsNotAndAndCreateByDpafAtIsNotNull(
+        structureId: String,
+        createByDpafAt: Instant
+    ): List<CheckRequestStatus>
 
     // Function to search from username or profession
     @Query("SELECT c FROM CheckRequestStatus c WHERE c.user.username = ?1 OR c.user.profession = ?2")

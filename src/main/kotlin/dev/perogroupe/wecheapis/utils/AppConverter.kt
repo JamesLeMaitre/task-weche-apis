@@ -1,42 +1,12 @@
 package dev.perogroupe.wecheapis.utils
 
 import dev.jtm.reportcardapisweb.dtos.responses.RoleResponse
-import dev.perogroupe.wecheapis.dtos.requests.CheckRequestStatusReq
-import dev.perogroupe.wecheapis.dtos.requests.ContactRequest
-import dev.perogroupe.wecheapis.dtos.requests.HelloRetirementRequest
-import dev.perogroupe.wecheapis.dtos.requests.NewRequestReq
-import dev.perogroupe.wecheapis.dtos.requests.RoleRequest
-import dev.perogroupe.wecheapis.dtos.requests.StructureRequest
-import dev.perogroupe.wecheapis.dtos.requests.UpRequest
-import dev.perogroupe.wecheapis.dtos.requests.UpdateUserRequest
-import dev.perogroupe.wecheapis.dtos.requests.UserAdminRequest
-import dev.perogroupe.wecheapis.dtos.requests.UserRequest
-import dev.perogroupe.wecheapis.dtos.responses.ApprovedRequestResponse
-import dev.perogroupe.wecheapis.dtos.responses.CheckRequestStatusResponse
-import dev.perogroupe.wecheapis.dtos.responses.ContactResponse
-import dev.perogroupe.wecheapis.dtos.responses.FileResponse
-import dev.perogroupe.wecheapis.dtos.responses.HelloRetirementResponse
-import dev.perogroupe.wecheapis.dtos.responses.NewRequestResponse
-import dev.perogroupe.wecheapis.dtos.responses.PendingRequestResponse
-import dev.perogroupe.wecheapis.dtos.responses.RejectedRequestResponse
-import dev.perogroupe.wecheapis.dtos.responses.StructureResponse
-import dev.perogroupe.wecheapis.dtos.responses.UpdateRequestResponse
-import dev.perogroupe.wecheapis.dtos.responses.UserResponse
-import dev.perogroupe.wecheapis.entities.ApprovedRequest
-import dev.perogroupe.wecheapis.entities.CheckRequestStatus
-import dev.perogroupe.wecheapis.entities.Contact
-import dev.perogroupe.wecheapis.entities.File
-import dev.perogroupe.wecheapis.entities.HelloRetirement
-import dev.perogroupe.wecheapis.entities.NewRequest
-import dev.perogroupe.wecheapis.entities.PendingRequest
-import dev.perogroupe.wecheapis.entities.RejectedRequest
-import dev.perogroupe.wecheapis.entities.Role
-import dev.perogroupe.wecheapis.entities.Structure
-import dev.perogroupe.wecheapis.entities.UpdateRequest
-import dev.perogroupe.wecheapis.entities.User
+import dev.perogroupe.wecheapis.dtos.requests.*
+import dev.perogroupe.wecheapis.dtos.responses.*
+import dev.perogroupe.wecheapis.entities.*
 import dev.perogroupe.wecheapis.utils.enums.RequestStatus
 import org.springframework.stereotype.Component
-import java.util.UUID
+import java.util.*
 
 @Component
 class AppConverter {
@@ -116,7 +86,17 @@ fun User.response(): UserResponse = UserResponse(
     profession = profession,
     structure = structure?.response(),
     requestNumber = requestNumber,
-    hasRequested = hasRequested
+    hasRequested = hasRequested,
+    gradeDate = gradeDate,
+    ppsDate = ppsDate,
+    body = body,
+    grade = grade,
+    oldUserFirstname = oldUserFirstname,
+    oldUserLastname = oldUserLastname,
+    oldUserSerialNumber = oldUserSerialNumber,
+    placeOfBirth = placeOfBirth,
+    ua = ua,
+    dateRetreat = dateRetreat,
 )
 
 fun User.toUpdate(request: UpdateUserRequest): User = this.copy(
@@ -133,9 +113,6 @@ fun Structure.response(): StructureResponse = StructureResponse(
     createdAt = createdAt
 )
 
-fun StructureRequest.toStructure(id: UUID): Structure = Structure(
-    name = name!!
-)
 
 fun ContactRequest.toContact(): Contact = Contact(
     name = name!!,
@@ -188,33 +165,46 @@ fun HelloRetirement.response(): HelloRetirementResponse = HelloRetirementRespons
 fun NewRequestReq.toNewRequest(): NewRequest = NewRequest(
     firstName = firstName!!,
     lastName = lastName!!,
-    civilName = civilName!!,
-    startPeriod = startPeriod!!.toDate("dd/MM/yyyy"),
-    endPeriod = endPeriod!!.toDate("dd/MM/yyyy"),
-    dateOfFirstEntryService = dateOfFirstEntryService!!.toDate("dd/MM/yyyy"),
+//    startPeriod = startPeriod!!.toDate("dd/MM/yyyy"),
+//    endPeriod = endPeriod!!.toDate("dd/MM/yyyy"),
+//    dateOfFirstEntryService = dateOfFirstEntryService!!.toDate("dd/MM/yyyy"),
     firstNameOfPreviousOfficial = firstNameOfPreviousOfficial!!,
     lastNameOfPreviousOfficial = lastNameOfPreviousOfficial!!,
-    gradeOfPreviousOfficial = gradeOfPreviousOfficial!!,
+//    gradeOfPreviousOfficial = gradeOfPreviousOfficial!!,
     serialNumberOfPreviousOfficial = serialNumberOfPreviousOfficial!!,
-    positionHeldOfPreviousOfficial = positionHeldOfPreviousOfficial!!,
-    bodyOfPreviousOfficial = bodyOfPreviousOfficial!!,
+//    positionHeldOfPreviousOfficial = positionHeldOfPreviousOfficial!!,
+//    bodyOfPreviousOfficial = bodyOfPreviousOfficial!!,
     requestStatus = RequestStatus.NEW,
-)
+// Start
+    serialNumber = serialNumber!!,
+    grade = grade!!,
+    gradeDate = gradeDate!!.toDate("dd/MM/yyyy"),
+    ua = ua!!,
+    positionHeld = positionHeld!!,
+//    agentPosition = agentPosition!!,
+    ppsDate = ppsDate!!.toDate("dd/MM/yyyy"),
+    uaDate = uaDate!!.toDate("dd/MM/yyyy"),
+    fonction = fonction!!,
+//    if (dateFonction != null) dateFonction!!.toDate("dd/MM/yyyy") else null,
+    dateFonction = dateFonction!!.toDate("dd/MM/yyyy"),
+    body = body!!,
+
+
+    )
 
 fun NewRequest.response(): NewRequestResponse = NewRequestResponse(
     id = id,
     firstName = firstName,
     lastName = lastName,
-    civilName = civilName,
-    startPeriod = startPeriod,
-    endPeriod = endPeriod,
-    dateOfFirstEntryService = dateOfFirstEntryService,
+//    startPeriod = startPeriod,
+//    endPeriod = endPeriod,
+//    dateOfFirstEntryService = dateOfFirstEntryService,
     firstNameOfPreviousOfficial = firstNameOfPreviousOfficial,
     lastNameOfPreviousOfficial = lastNameOfPreviousOfficial,
-    gradeOfPreviousOfficial = gradeOfPreviousOfficial,
+//    gradeOfPreviousOfficial = gradeOfPreviousOfficial,
     serialNumberOfPreviousOfficial = serialNumberOfPreviousOfficial,
-    positionHeldOfPreviousOfficial = positionHeldOfPreviousOfficial,
-    bodyOfPreviousOfficial = bodyOfPreviousOfficial,
+//    positionHeldOfPreviousOfficial = positionHeldOfPreviousOfficial,
+//    bodyOfPreviousOfficial = bodyOfPreviousOfficial,
     appointmentDecree = appointmentDecree?.response(),
     handingOver = handingOver?.response(),
     requestNumber = requestNumber!!,
@@ -222,7 +212,20 @@ fun NewRequest.response(): NewRequestResponse = NewRequestResponse(
     requestStatus = requestStatus,
     createdAt = createdAt,
     title = title,
-//    user = user?.response()
+
+    serialNumber = serialNumber,
+    grade = grade,
+    gradeDate = gradeDate,
+    ua = ua,
+    positionHeld = positionHeld,
+//    agentPosition = agentPosition,
+    ppsDate = ppsDate,
+    uaDate = uaDate,
+    fonction = fonction,
+    dateFonction = dateFonction,
+    body = body,
+    beneficiary = beneficiary?.response(),
+    user = user?.response()
 )
 
 /**
@@ -236,21 +239,34 @@ fun PendingRequest.response(): PendingRequestResponse {
         firstName = firstName,
         lastName = lastName,
         structure = structure?.response(),
-        civilName = civilName,
         createdAt = createdAt,
-        startPeriod = startPeriod,
-        endPeriod = endPeriod,
-        dateOfFirstEntryService = dateOfFirstEntryService,
+//        startPeriod = startPeriod,
+//        endPeriod = endPeriod,
+//        dateOfFirstEntryService = dateOfFirstEntryService,
         firstNameOfPreviousOfficial = firstNameOfPreviousOfficial,
         lastNameOfPreviousOfficial = lastNameOfPreviousOfficial,
         serialNumberOfPreviousOfficial = serialNumberOfPreviousOfficial,
-        gradeOfPreviousOfficial = gradeOfPreviousOfficial,
-        positionHeldOfPreviousOfficial = positionHeldOfPreviousOfficial,
-        bodyOfPreviousOfficial = bodyOfPreviousOfficial,
+//        gradeOfPreviousOfficial = gradeOfPreviousOfficial,
+//        positionHeldOfPreviousOfficial = positionHeldOfPreviousOfficial,
+//        bodyOfPreviousOfficial = bodyOfPreviousOfficial,
         requestStatus = requestStatus,
         requestNumber = requestNumber,
         appointmentDecree = appointmentDecree?.response(),
         handingOver = handingOver?.response(),
+
+        serialNumber = serialNumber,
+        grade = grade,
+        gradeDate = gradeDate,
+        ua = ua,
+        positionHeld = positionHeld,
+//        agentPosition = agentPosition,
+        ppsDate = ppsDate,
+        uaDate = uaDate,
+        fonction = fonction,
+        dateFonction = dateFonction,
+        body = body,
+        beneficiary = beneficiary?.response(),
+        user = user?.response()
     )
 }
 
@@ -264,22 +280,34 @@ fun NewRequest.toPendingRequest(): PendingRequest {
     return PendingRequest(
         firstName = firstName,
         lastName = lastName,
-        civilName = civilName,
-        startPeriod = startPeriod,
-        endPeriod = endPeriod,
-        dateOfFirstEntryService = dateOfFirstEntryService,
+//        startPeriod = startPeriod,
+//        endPeriod = endPeriod,
+//        dateOfFirstEntryService = dateOfFirstEntryService,
         firstNameOfPreviousOfficial = firstNameOfPreviousOfficial,
         lastNameOfPreviousOfficial = lastNameOfPreviousOfficial,
-        gradeOfPreviousOfficial = gradeOfPreviousOfficial,
+//        gradeOfPreviousOfficial = gradeOfPreviousOfficial,
         serialNumberOfPreviousOfficial = serialNumberOfPreviousOfficial,
-        positionHeldOfPreviousOfficial = positionHeldOfPreviousOfficial,
-        bodyOfPreviousOfficial = bodyOfPreviousOfficial,
+//        positionHeldOfPreviousOfficial = positionHeldOfPreviousOfficial,
+//        bodyOfPreviousOfficial = bodyOfPreviousOfficial,
         requestNumber = requestNumber!!,
         requestStatus = RequestStatus.PENDING,
         structure = structure,
         appointmentDecree = appointmentDecree,
         handingOver = handingOver,
-        user = user
+        user = user,
+
+        serialNumber = serialNumber,
+        grade = grade,
+        gradeDate = gradeDate,
+        ua = ua,
+        positionHeld = positionHeld,
+//        agentPosition = agentPosition,
+        ppsDate = ppsDate,
+        uaDate = uaDate,
+        fonction = fonction,
+        dateFonction = dateFonction,
+        body = body,
+        beneficiary = beneficiary
     )
 }
 
@@ -343,37 +371,49 @@ fun RejectedRequest.response(): RejectedRequestResponse = RejectedRequestRespons
     requestNumber = requestNumber,
     firstName = firstName,
     lastName = lastName,
-    civilName = civilName,
     createdAt = createdAt,
-    startPeriod = startPeriod,
-    endPeriod = endPeriod,
-    dateOfFirstEntryService = dateOfFirstEntryService,
+//    startPeriod = startPeriod,
+//    endPeriod = endPeriod,
+//    dateOfFirstEntryService = dateOfFirstEntryService,
     firstNameOfPreviousOfficial = firstNameOfPreviousOfficial,
     lastNameOfPreviousOfficial = lastNameOfPreviousOfficial,
     serialNumberOfPreviousOfficial = serialNumberOfPreviousOfficial,
-    gradeOfPreviousOfficial = gradeOfPreviousOfficial,
-    positionHeldOfPreviousOfficial = positionHeldOfPreviousOfficial,
-    bodyOfPreviousOfficial = bodyOfPreviousOfficial,
+//    gradeOfPreviousOfficial = gradeOfPreviousOfficial,
+//    positionHeldOfPreviousOfficial = positionHeldOfPreviousOfficial,
+//    bodyOfPreviousOfficial = bodyOfPreviousOfficial,
     requestStatus = requestStatus,
     rejectReason = rejectReason,
     reject = reject,
     appointmentDecree = appointmentDecree?.response(),
     handingOver = handingOver?.response(),
+
+    serialNumber = serialNumber,
+    grade = grade,
+    gradeDate = gradeDate,
+    ua = ua,
+    positionHeld = positionHeld,
+//    agentPosition = agentPosition,
+    ppsDate = ppsDate,
+    uaDate = uaDate,
+    fonction = fonction,
+    dateFonction = dateFonction,
+    body = body,
+    beneficiary = beneficiary?.response(),
+    user = user?.response(),
 )
 
 fun NewRequest.toRejectedRequest(): RejectedRequest = RejectedRequest(
     firstName = firstName,
     lastName = lastName,
-    civilName = civilName,
-    startPeriod = startPeriod,
-    endPeriod = endPeriod,
-    dateOfFirstEntryService = dateOfFirstEntryService,
+//    startPeriod = startPeriod,
+//    endPeriod = endPeriod,
+//    dateOfFirstEntryService = dateOfFirstEntryService,
     firstNameOfPreviousOfficial = firstNameOfPreviousOfficial,
     lastNameOfPreviousOfficial = lastNameOfPreviousOfficial,
     serialNumberOfPreviousOfficial = serialNumberOfPreviousOfficial,
-    gradeOfPreviousOfficial = gradeOfPreviousOfficial,
-    positionHeldOfPreviousOfficial = positionHeldOfPreviousOfficial,
-    bodyOfPreviousOfficial = bodyOfPreviousOfficial,
+//    gradeOfPreviousOfficial = gradeOfPreviousOfficial,
+//    positionHeldOfPreviousOfficial = positionHeldOfPreviousOfficial,
+//    bodyOfPreviousOfficial = bodyOfPreviousOfficial,
     requestNumber = requestNumber!!,
     requestStatus = RequestStatus.REJECTED,
     rejectReason = "",
@@ -381,22 +421,34 @@ fun NewRequest.toRejectedRequest(): RejectedRequest = RejectedRequest(
     user = user,
     structure = structure,
     appointmentDecree = appointmentDecree,
-    handingOver = handingOver
+    handingOver = handingOver,
+
+    serialNumber = serialNumber,
+    grade = grade,
+    gradeDate = gradeDate,
+    ua = ua,
+    positionHeld = positionHeld,
+//    agentPosition = agentPosition,
+    ppsDate = ppsDate,
+    uaDate = uaDate,
+    fonction = fonction,
+    dateFonction = dateFonction,
+    body = body,
+    beneficiary = beneficiary,
 )
 
 fun PendingRequest.toRejectedRequest(): RejectedRequest = RejectedRequest(
     firstName = firstName,
     lastName = lastName,
-    civilName = civilName,
-    startPeriod = startPeriod,
-    endPeriod = endPeriod,
-    dateOfFirstEntryService = dateOfFirstEntryService,
+//    startPeriod = startPeriod,
+//    endPeriod = endPeriod,
+//    dateOfFirstEntryService = dateOfFirstEntryService,
     firstNameOfPreviousOfficial = firstNameOfPreviousOfficial,
     lastNameOfPreviousOfficial = lastNameOfPreviousOfficial,
     serialNumberOfPreviousOfficial = serialNumberOfPreviousOfficial,
-    gradeOfPreviousOfficial = gradeOfPreviousOfficial,
-    positionHeldOfPreviousOfficial = positionHeldOfPreviousOfficial,
-    bodyOfPreviousOfficial = bodyOfPreviousOfficial,
+//    gradeOfPreviousOfficial = gradeOfPreviousOfficial,
+//    positionHeldOfPreviousOfficial = positionHeldOfPreviousOfficial,
+//    bodyOfPreviousOfficial = bodyOfPreviousOfficial,
     requestNumber = requestNumber!!,
     requestStatus = RequestStatus.REJECTED,
     rejectReason = "",
@@ -404,7 +456,19 @@ fun PendingRequest.toRejectedRequest(): RejectedRequest = RejectedRequest(
     user = user,
     handingOver = handingOver,
     appointmentDecree = appointmentDecree,
-    structure = structure
+    structure = structure,
+
+    serialNumber = serialNumber,
+    grade = grade,
+    gradeDate = gradeDate,
+    ua = ua,
+    positionHeld = positionHeld,
+//    agentPosition = agentPosition,
+    ppsDate = ppsDate,
+    uaDate = uaDate,
+    fonction = fonction,
+    dateFonction = dateFonction,
+    body = body,
 )
 
 /**
@@ -417,24 +481,68 @@ fun PendingRequest.toApprovedRequest(): ApprovedRequest {
     return ApprovedRequest(
         firstName = firstName,
         lastName = lastName,
-        civilName = civilName,
-        startPeriod = startPeriod,
-        endPeriod = endPeriod,
-        dateOfFirstEntryService = dateOfFirstEntryService,
+//        startPeriod = startPeriod,
+//        endPeriod = endPeriod,
+//        dateOfFirstEntryService = dateOfFirstEntryService,
         firstNameOfPreviousOfficial = firstNameOfPreviousOfficial,
         lastNameOfPreviousOfficial = lastNameOfPreviousOfficial,
         serialNumberOfPreviousOfficial = serialNumberOfPreviousOfficial,
-        gradeOfPreviousOfficial = gradeOfPreviousOfficial,
-        positionHeldOfPreviousOfficial = positionHeldOfPreviousOfficial,
-        bodyOfPreviousOfficial = bodyOfPreviousOfficial,
+//        gradeOfPreviousOfficial = gradeOfPreviousOfficial,
+//        positionHeldOfPreviousOfficial = positionHeldOfPreviousOfficial,
+//        bodyOfPreviousOfficial = bodyOfPreviousOfficial,
         requestNumber = requestNumber!!,
         requestStatus = RequestStatus.APPROVED,
         user = user,
         structure = structure,
         appointmentDecree = appointmentDecree,
         handingOver = handingOver,
+
+        serialNumber = serialNumber,
+        grade = grade,
+        gradeDate = gradeDate,
+        ua = ua,
+        positionHeld = positionHeld,
+//        agentPosition = agentPosition,
+        ppsDate = ppsDate,
+        uaDate = uaDate,
+        fonction = fonction,
+        dateFonction = dateFonction,
+        body = body,
     )
 }
+
+fun NewRequest.toApprovedRequest(): ApprovedRequest = ApprovedRequest(
+    firstName = firstName,
+    lastName = lastName,
+//    startPeriod = startPeriod,
+//    endPeriod = endPeriod,
+//    dateOfFirstEntryService = dateOfFirstEntryService,
+    firstNameOfPreviousOfficial = firstNameOfPreviousOfficial,
+    lastNameOfPreviousOfficial = lastNameOfPreviousOfficial,
+    serialNumberOfPreviousOfficial = serialNumberOfPreviousOfficial,
+//    gradeOfPreviousOfficial = gradeOfPreviousOfficial,
+//    positionHeldOfPreviousOfficial = positionHeldOfPreviousOfficial,
+//    bodyOfPreviousOfficial = bodyOfPreviousOfficial,
+    requestNumber = requestNumber!!,
+    requestStatus = RequestStatus.APPROVED,
+    user = user,
+    structure = structure,
+    appointmentDecree = appointmentDecree,
+    handingOver = handingOver,
+
+    serialNumber = serialNumber,
+    grade = grade,
+    gradeDate = gradeDate,
+    ua = ua,
+    positionHeld = positionHeld,
+//    agentPosition = agentPosition,
+    ppsDate = ppsDate,
+    uaDate = uaDate,
+    fonction = fonction,
+    dateFonction = dateFonction,
+    body = body,
+    beneficiary = beneficiary
+)
 
 /**
  * Generates a response for an ApprovedRequest.
@@ -465,20 +573,34 @@ fun ApprovedRequest.response(): ApprovedRequestResponse {
         requestNumber = requestNumber,
         firstName = firstName,
         lastName = lastName,
-        civilName = civilName,
         createdAt = createdAt,
-        startPeriod = startPeriod,
-        endPeriod = endPeriod,
-        dateOfFirstEntryService = dateOfFirstEntryService,
+//        startPeriod = startPeriod,
+//        endPeriod = endPeriod,
+//        dateOfFirstEntryService = dateOfFirstEntryService,
         firstNameOfPreviousOfficial = firstNameOfPreviousOfficial,
         lastNameOfPreviousOfficial = lastNameOfPreviousOfficial,
         serialNumberOfPreviousOfficial = serialNumberOfPreviousOfficial,
-        gradeOfPreviousOfficial = gradeOfPreviousOfficial,
-        positionHeldOfPreviousOfficial = positionHeldOfPreviousOfficial,
-        bodyOfPreviousOfficial = bodyOfPreviousOfficial,
+//        gradeOfPreviousOfficial = gradeOfPreviousOfficial,
+//        positionHeldOfPreviousOfficial = positionHeldOfPreviousOfficial,
+//        bodyOfPreviousOfficial = bodyOfPreviousOfficial,
         requestStatus = requestStatus,
-        user = user?.response()
-    )
+        user = user?.response(),
+
+
+        serialNumber = serialNumber,
+        body = body,
+        grade = grade,
+        gradeDate = gradeDate,
+        ua = ua,
+        positionHeld = positionHeld,
+//        agentPosition = agentPosition,
+        ppsDate = ppsDate,
+        uaDate = uaDate,
+        fonction = fonction,
+        dateFonction = dateFonction,
+        beneficiary = beneficiary?.response(),
+
+        )
 }
 
 /**
@@ -504,6 +626,90 @@ fun UpdateRequest.response(): UpdateRequestResponse {
         handingOver = handingOver,
         appointmentDecree = appointmentDecree,
         reason = reason,
-        request = request?.response()
+        request = request?.response(),
+        newRequest = newRequest?.response()
     )
 }
+
+fun Beneficiary.response(): BeneficiaryResponse {
+    return BeneficiaryResponse(
+        id = id,
+        name = name,
+        attribute = attribute,
+        createdAt = createdAt
+    )
+}
+
+fun BeneficiaryRequest.toBeneficiary(): Beneficiary {
+    return Beneficiary(
+        name = name,
+        attribute = attribute
+    )
+}
+
+/**
+ * Maps a [DnrRequest] to a [Dnr].
+ */
+fun DnrRequest.toDnr(): Dnr = Dnr(
+    // Set the validityStart to the current date and validityEnd plus 90 days
+    validityStart = Date(),
+    validityEnd = plus(Date(), 90),
+//    validityEnd = plusMinutes(Date(), 2),
+    valid = true,
+)
+
+/**
+ * Maps a [Dnr] to a [DnrResponse].
+ */
+fun Dnr.response(): DnrResponse = DnrResponse(
+    id = id,
+    user = user?.response(),
+    validityStart = validityStart,
+    validityEnd = validityEnd,
+    newRequest = newRequest?.response(),
+    valid = valid,
+    createdAt = createdAt
+)
+
+
+/**
+ * Adds the specified number of days to the specified date.
+ */
+fun plus(date: Date, days: Int): Date {
+    val calendar = Calendar.getInstance()
+    calendar.time = date
+    calendar.add(Calendar.DATE, days)
+    return calendar.time
+}
+
+/**
+ * Adds the specified number of minutes to the specified date.
+ */
+fun plusMinutes(date: Date, minutes: Int): Date {
+    val calendar = Calendar.getInstance()
+    calendar.time = date
+    calendar.add(Calendar.MINUTE, minutes)
+    return calendar.time
+}
+
+
+fun checkValidityRequestToCheckValidity(request: CheckValidityRequest): CheckValidity {
+    return CheckValidity(
+        appDocument = request.appDocument,
+        appDocumentDateDelivery = request.appDocumentDateDelivery,
+        appDnr = request.appDnr,
+        appDnrDateDelivery = request.appDnrDateDelivery,
+        user = request.user,
+        used = false,
+        appDocumentDateEnd = Date(),
+        appDnrDateEnd = Date()
+    )
+}
+
+
+fun DocumentRecordRequest.toDocumentRecord(): DocumentRecord = DocumentRecord(
+    requestNumber = requestNumber,
+    reference = reference,
+    pdfData = pdfData
+)
+

@@ -71,7 +71,7 @@ class AuthenticationServiceImpl(
         )
 
         // Set the default role for the user
-        setRoles(user, "ROLE_SUPER_ADMIN")
+        setRoles(user, "ROLE_USER")
 
         // Save the user and return the response
         return repository.save(user).response()

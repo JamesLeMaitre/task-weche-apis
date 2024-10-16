@@ -30,10 +30,16 @@ class ApprovedController(
      * @return ResponseEntity containing the HttpResponse
      */
     @GetMapping("{id}")
-    @PreAuthorize("hasRole('ROLE_SUPER_ADMIN')")
+    @PreAuthorize("hasAnyRole('ROLE_SUPER_ADMIN', 'ROLE_ADMIN')")
     @Operation(summary = "Approve a request", description = "Approve a request")
     fun store(@PathVariable id: String): ResponseEntity<HttpResponse> = successResponse(
         "Approved request created successfully!", OK, service.store(id)
+    )
+
+    @GetMapping("store/{id}")
+    @PreAuthorize("hasRole('ROLE_ADMIN')")
+    fun create(@PathVariable id: String): ResponseEntity<HttpResponse> = successResponse(
+        "Approved request created successfully!", OK, service.create(id)
     )
 
     /**
